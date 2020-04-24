@@ -24,5 +24,8 @@ setuptools.setup(
 		"Topic :: Software Development :: Libraries :: Python Modules",
 		"Topic :: Scientific/Engineering :: Physics"
 	],
+	install_requires=[
+		'six'
+	]
 	python_requires='>=2.7',
 )
