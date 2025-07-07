@@ -26,6 +26,6 @@ setuptools.setup(
 	],
 	install_requires=[
 		'six'
-	]
+	],
 	python_requires='>=2.7',
 )
