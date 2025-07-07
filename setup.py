@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
 	name="UGFlib",
-	version="0.0.1",
+	version="0.0.2",
 	author="shedarshian",
 	author_email="shedarshian@gmail.com",
 	description="A library developed by shedarshian.",
