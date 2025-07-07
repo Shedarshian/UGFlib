@@ -55,6 +55,8 @@ class _color:
 			return (root.RooFit.LineStyle(root.kDashed), root.RooFit.LineColor(root.kOrange + n))
 		elif attr == 'yellow':
 			return (root.RooFit.LineStyle(root.kDashed), root.RooFit.LineColor(root.kYellow + n))
+		elif attr == 'bluedot':
+			return (root.RooFit.LineStyle(root.kDotted), root.RooFit.LineColor(root.kBlue + n))
 		elif attr == 'blue':
 			return (root.RooFit.LineStyle(root.kDashed), root.RooFit.LineColor(root.kBlue + n))
 		elif attr == 'green':
@@ -77,6 +79,10 @@ def RedArrow():
 	ar = root.TArrow()
 	ar.SetLineColor(2)
 	ar.SetFillColor(2)
+	return ar
+def RedLine():
+	ar = root.TLine()
+	ar.SetLineColor(2)
 	return ar
 
 def FitArgs(i):
@@ -192,6 +198,7 @@ class _Likelihood(object):
 			g.SetPoint(i, n, val)
 		g.SetTitle('')
 		g.GetXaxis().SetTitle('N_{sig}')
+		g.GetXaxis().SetLabelSize(0.04)
 		g.GetYaxis().SetTitle('likelihood')
 		g.Draw('AC')
 		if E is not None:
@@ -205,10 +212,13 @@ class _Likelihood(object):
 				n, val, nll = self.upper_limit()
 			else:
 				n, val, nll = self.upper_limit(U)
+			l = RedArrow()
+			#l.SetLineWidth(0.02)
 			if val * 1.6 > 0.8:
-				RedArrow().DrawArrow(float(n), val * 2.5, float(n), val * 1.6, 0.02, "|>")
+				#RedLine().DrawLine(float(n), g.GetYaxis().GetXmax(), float(n), g.GetYaxis().GetXmin())
+				l.DrawArrow(float(n), val * 2.5, float(n), val * 1.6, 0.02, "|>")
 			else:
-				RedArrow().DrawArrow(float(n), max(val * 2.5, 1.0), float(n), val * 1.6, 0.02, "|>")
+				l.DrawArrow(float(n), max(val * 2.5, 1.0), float(n), val * 1.6, 0.02, "|>")
 		if if_pause:
 			from getpass import getpass
 			getpass('Enter...')
@@ -303,7 +313,7 @@ class FOM:
 		import json
 		with open(json_name or 'FOM.json', 'w') as f:
 			f.write(json.dumps([(float(i), val) for i, val in self.val]))
-	def plot(self, path=None, title=('', ''), if_pause=True):
+	def plot(self, path=None, title=('', ''), if_pause=True, draw_line=True, line_x=None):
 		path = path or 'pic/FOM.eps'
 		c = root.TCanvas()
 		g = root.TGraph(len(self.val))
@@ -315,8 +325,11 @@ class FOM:
 		g.SetMarkerColor(4)
 		g.SetMarkerStyle(21)
 		g.Draw("ALP")
-		self.max = i, val = max(self.val, key=lambda x: x[1])
-		RedArrow().DrawArrow(float(i), max(val * 0.5, 1.0), float(i), val * 0.8, 0.02, "|>")
+		i, val = self.max
+		if draw_line:
+			line_x = line_x or float(i)
+			RedLine().DrawLine(line_x, g.GetYaxis().GetXmax(), line_x, g.GetYaxis().GetXmin())
+		#RedArrow().DrawArrow(float(i), max(val * 0.5, 1.0), float(i), val * 0.8, 0.02, "|>")
 		c.SaveAs(path)
 		if if_pause:
 			from getpass import getpass
@@ -333,6 +346,7 @@ class FOM:
 			b = self.background(inc_cut)
 			self.save_individual_plot(inc_cut, subplot_path.format(cut, 'inc'), False)
 			self.val.append((cut, s / (s + b) ** 0.5))
+		self.max = i, val = max(self.val, key=lambda x: x[1])
 		if json_path is not None:
 			self.save(json_path)
 
