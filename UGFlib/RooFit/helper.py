@@ -55,11 +55,6 @@ class _color:
 			return (root.RooFit.LineStyle(root.kDashed), root.RooFit.LineColor(root.kOrange + n))
 		elif attr == 'yellow':
 			return (root.RooFit.LineStyle(root.kDashed), root.RooFit.LineColor(root.kYellow + n))
-<<<<<<< HEAD
-		elif attr == 'bluedot':
-			return (root.RooFit.LineStyle(root.kDotted), root.RooFit.LineColor(root.kBlue + n))
-=======
->>>>>>> 2734205be300ec92df94c46872bd33b9d5c21d99
 		elif attr == 'blue':
 			return (root.RooFit.LineStyle(root.kDashed), root.RooFit.LineColor(root.kBlue + n))
 		elif attr == 'green':
@@ -83,13 +78,10 @@ def RedArrow():
 	ar.SetLineColor(2)
 	ar.SetFillColor(2)
 	return ar
-<<<<<<< HEAD
 def RedLine():
 	ar = root.TLine()
 	ar.SetLineColor(2)
 	return ar
-=======
->>>>>>> 2734205be300ec92df94c46872bd33b9d5c21d99
 
 def FitArgs(i):
 	if i == 0:
@@ -204,10 +196,7 @@ class _Likelihood(object):
 			g.SetPoint(i, n, val)
 		g.SetTitle('')
 		g.GetXaxis().SetTitle('N_{sig}')
-<<<<<<< HEAD
 		g.GetXaxis().SetLabelSize(0.04)
-=======
->>>>>>> 2734205be300ec92df94c46872bd33b9d5c21d99
 		g.GetYaxis().SetTitle('likelihood')
 		g.Draw('AC')
 		if E is not None:
@@ -221,20 +210,10 @@ class _Likelihood(object):
 				n, val, nll = self.upper_limit()
 			else:
 				n, val, nll = self.upper_limit(U)
-<<<<<<< HEAD
-			l = RedArrow()
-			#l.SetLineWidth(0.02)
-			if val * 1.6 > 0.8:
-				#RedLine().DrawLine(float(n), g.GetYaxis().GetXmax(), float(n), g.GetYaxis().GetXmin())
-				l.DrawArrow(float(n), val * 2.5, float(n), val * 1.6, 0.02, "|>")
-			else:
-				l.DrawArrow(float(n), max(val * 2.5, 1.0), float(n), val * 1.6, 0.02, "|>")
-=======
 			if val * 1.6 > 0.8:
 				RedArrow().DrawArrow(float(n), val * 2.5, float(n), val * 1.6, 0.02, "|>")
 			else:
 				RedArrow().DrawArrow(float(n), max(val * 2.5, 1.0), float(n), val * 1.6, 0.02, "|>")
->>>>>>> 2734205be300ec92df94c46872bd33b9d5c21d99
 		if if_pause:
 			from getpass import getpass
 			getpass('Enter...')
