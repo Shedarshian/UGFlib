@@ -6,6 +6,7 @@ import decimal
 from collections import namedtuple
 import math, re
 from numbers import Number
+from typing import Any
 
 def FormatData(datahist):
 	datahist.SetMarkerStyle(20)
@@ -294,7 +295,7 @@ class FOM:
 	def read_incMC(self, *args, **kwargs):
 		pass
 	@abstractmethod
-	def apply_cut(self, dataset, cut, *args, **kwargs):
+	def apply_cut(self, dataset, cut, *args, **kwargs) -> Any:
 		pass
 	@abstractmethod
 	def signal(self, excMC, *args, **kwargs):
@@ -307,7 +308,7 @@ class FOM:
 	def save(self, json_name):
 		import json
 		with open(json_name or 'FOM.json', 'w') as f:
-			f.write(json.dumps([(float(i), val) for i, val in self.val]))
+			f.write(json.dumps([(float(i), val) for i, val in self.val], indent=4))
 	def plot(self, path=None, title=('', ''), if_pause=True, draw_line=True, line_x=None):
 		path = path or 'pic/FOM.eps'
 		c = root.TCanvas()
@@ -329,14 +330,20 @@ class FOM:
 		if if_pause:
 			from getpass import getpass
 			getpass('pause...')
-	def process(self, json_path=None, subplot_path=None):
+	def process(self, json_path=None, subplot_path=None, log=None):
+		if log is None:
+			log = lambda *args, **kwargs: None
+		log("Reading exc MC...")
 		excMC = self.read_excMC()
+		log("Reading inc MC...")
 		incMC = self.read_incMC()
 		subplot_path = subplot_path or 'FOMsub_{0}_{1}.eps'
 		for cut in self.cutRange:
+			log(f"Applying cut on exc MC... for cut={cut}")
 			exc_cut = self.apply_cut(excMC, cut)
 			s = self.signal(exc_cut)
 			self.save_individual_plot(exc_cut, subplot_path.format(cut, 'exc'), True)
+			log(f"Applying cut on inc MC... for cut={cut}")
 			inc_cut = self.apply_cut(incMC, cut)
 			b = self.background(inc_cut)
 			self.save_individual_plot(inc_cut, subplot_path.format(cut, 'inc'), False)

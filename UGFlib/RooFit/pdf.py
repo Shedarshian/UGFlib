@@ -314,53 +314,54 @@ class Pdf(AllPdf): # {{{
 # }}}
 
 def metapdf_withkw(typ_str, args_default): # {{{
-	def _pdf(name, bases, dct):
-		dct['typ_str'] = typ_str
-		dct['args_default'] = args_default
-		def __init__(self, X, *args, **kwargs):
-			args = list(args)
-			l = []
-			for s in self.args_default:
-				if len(args) != 0:
-					l.append(_change(args.pop(0)))
-				elif s in kwargs:
-					l.append(_change(kwargs.pop(s)))
-				elif s + '_init' in kwargs:
-					l.append(_change(kwargs.pop(s + '_init'), True))
+	class _pdf(type):
+		def __new__(cls, name, bases, dct):
+			dct['typ_str'] = typ_str
+			dct['args_default'] = args_default
+			def __init__(self, X, *args, **kwargs):
+				args = list(args)
+				l = []
+				for s in self.args_default:
+					if len(args) != 0:
+						l.append(_change(args.pop(0)))
+					elif s in kwargs:
+						l.append(_change(kwargs.pop(s)))
+					elif s + '_init' in kwargs:
+						l.append(_change(kwargs.pop(s + '_init'), True))
+					else:
+						l.append(Var())
+				if len(args) >= 1 and isinstance(args[0], string_types):
+					name = args.pop(0)
+				elif 'name' in kwargs:
+					name = kwargs.pop('name')
 				else:
-					l.append(Var())
-			if len(args) >= 1 and isinstance(args[0], string_types):
-				name = args.pop(0)
-			elif 'name' in kwargs:
-				name = kwargs.pop('name')
-			else:
-				name = self._gen_name()
-			if len(args) != 0 or len(kwargs) != 0:
-				raise TypeError
-			for typ in bases:
-				typ.__init__(self)
-			Pdf.__init__(self, X, name, None)
-			if isinstance(self.typ_str, str):
-				self.pdf = root.__getattr__(self.typ_str)(name, name, self.X, *map(lambda x: x.var, l))
-			else:
-				print(l)
-				self.pdf = self.typ_str(name, self.X, *map(lambda x: x.var, l))
-		dct['__init__'] = __init__
-		return type(name, bases + (AutoNaming, Pdf), dct)
+					name = self._gen_name()
+				if len(args) != 0 or len(kwargs) != 0:
+					raise TypeError
+				for typ in bases:
+					typ.__init__(self)
+				Pdf.__init__(self, X, name, None)
+				if isinstance(self.typ_str, str):
+					self.pdf = root.__getattr__(self.typ_str)(name, name, self.X, *map(lambda x: x.var, l))
+				else:
+					print(l)
+					self.pdf = self.typ_str(name, self.X, *map(lambda x: x.var, l))
+			bases += (AutoNaming, Pdf)
+			import sys
+			sys.stdout.flush()
+			dct['__init__'] = __init__
+			return super().__new__(cls, name, bases, dct)
+			# return type(name, bases + (AutoNaming, Pdf), dct)
 	return _pdf
 # }}}
 
-@add_metaclass(metapdf_withkw('RooGaussian', ('mean', 'sigma')))
-class Gaus:
+class Gaus(metaclass=metapdf_withkw('RooGaussian', ('mean', 'sigma'))):
 	pass
-@add_metaclass(metapdf_withkw('RooArgusBG', ('m0', 'c', 'p')))
-class Argus:
+class Argus(metaclass=metapdf_withkw('RooArgusBG', ('m0', 'c', 'p'))):
 	pass
-@add_metaclass(metapdf_withkw('RooCBShape', ('mean', 'sigma', 'asym', 'amp')))
-class Crys:
+class Crys(metaclass=metapdf_withkw('RooCBShape', ('mean', 'sigma', 'asym', 'amp'))):
 	pass
-@add_metaclass(metapdf_withkw('RooBreitWigner', ('mean', 'sigma')))
-class BW:
+class BW(metaclass=metapdf_withkw('RooBreitWigner', ('mean', 'sigma'))):
 	pass
 
 dblgaus_cache = []
@@ -373,8 +374,7 @@ def _build_dblgaus(self, name, X, varfrac, mean1, sigma1, mean2, sigma2):
 	list2 = root.RooArgList(varfrac)
 	dblgaus_cache.extend([gaus1, gaus2, list1, list2])
 	return root.RooAddPdf(name, name, list1, list2)
-@add_metaclass(metapdf_withkw(_build_dblgaus, ('frac', 'mean1', 'sigma1', 'mean2', 'sigma2')))
-class DblGaus:
+class DblGaus(metaclass=metapdf_withkw(_build_dblgaus, ('frac', 'mean1', 'sigma1', 'mean2', 'sigma2'))):
 	pass
 
 class Poly(AutoNaming, Pdf): # {{{
